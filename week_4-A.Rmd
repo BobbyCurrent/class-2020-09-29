@@ -31,6 +31,7 @@ d_2019 <- read_excel("raw_data/class_enrollment_summary_by_term_12.20.19.xlsx",
   summarize(u_grad = sum(u_grad), .groups = "drop") %>% 
   filter(u_grad > 10)
   
+d_2019
 ```
 
 
@@ -39,6 +40,26 @@ d_2019 <- read_excel("raw_data/class_enrollment_summary_by_term_12.20.19.xlsx",
 
 **Prompt:** We could copy/paste this code 5 times, adjust the files names, and then read in each file. But, as you know from Chapter 4, that is a bad idea. It also scales very poorly. Create a function called `read_enrollent` which takes one argument, `file`. Use that function to read in the data from fall 2019 and assign it to an object called `d_2019_take_2`. Do you get the same answer as you did in Scene 1?
 
+```{r}
+
+read_enrollment <- function(file, n = 3){
+read_excel(path = file,
+           skip = n) %>%
+  clean_names() %>%
+  filter(! is.na(course_title)) %>%
+   select( -instructor_full_name, -course_section_code) %>%
+  rename(id = course_id,
+         title = course_title,
+         name = course_name,
+         department = course_department)%>% 
+  group_by(id, title, name, department) %>% 
+  summarize(u_grad = sum(u_grad), .groups = "drop") %>% 
+  filter(u_grad > 10)
+}
+d_2019_take_2 <- read_enrollment(file = "raw_data/class_enrollment_summary_by_term_12.20.19.xlsx")
+
+d_2019_take_2
+```
 
 
 ### Scene 3
@@ -47,6 +68,18 @@ d_2019 <- read_excel("raw_data/class_enrollment_summary_by_term_12.20.19.xlsx",
 
 Arrg! Depending in how you wrote `read_enrollment()`, you will probably be getting an error, for at least some of the years.  How annoying that Harvard changes the format! Make your function flexible enough to deal with all these files. Hint: You need to add at least one argument in addition to `file` so that you can change the behavior of the function when you call it. Give that new argument a sensible default.
 
+```{r}
+d_2017 <- read_enrollment(file = "raw_data/class_enrollment_summary_by_term_10.20.17.xlsx")
+
+d_2018 <- read_enrollment(file = "raw_data/class_enrollment_summary_by_term_10.24.18.xlsx", n = 2)
+
+d_2019_take_3 <- read_enrollment(file = "raw_data/class_enrollment_summary_by_term_12.20.19.xlsx")
+
+d_2015 <- read_enrollment(file = "raw_data/class_enrollment_summary_by_term_fall_2015.xlsx")
+
+d_2016 <- read_enrollment(file = "raw_data/class_enrollment_summary_by_term_fall_2016.xlsx", n = 0)
+
+```
 
 ### Scene 4
 
